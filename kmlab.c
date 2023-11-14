@@ -34,18 +34,10 @@ struct ll_struct{
    int CPUTime;
 };
 
-//TODO: The proc_ops
-static struct proc_ops proc_fops = { 
-   // .proc_read = procfs_read, 
-   .proc_write = procfs_write, 
-   // .proc_open = procfs_open, 
-   // .proc_release = procfs_close, 
-}; 
 
-//TODO: procfs_read
 
 //TODO: procfs_write
-static ssize_t procfile_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
+static ssize_t procfs_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
 {
    /* Clear internal buffer */
 	memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
@@ -63,6 +55,18 @@ static ssize_t procfile_write(struct file *file, const char __user *buff, size_t
 
     return procfs_buffer_size;
 }
+
+//TODO: procfs_read
+
+//TODO: The proc_ops
+static struct proc_ops proc_fops = { 
+   // .proc_read = procfs_read, 
+   .proc_write = procfs_write, 
+   // .proc_open = procfs_open, 
+   // .proc_release = procfs_close, 
+}; 
+
+
 
 // adds a item to the linked list
 int add_node(int PID, int CPUTime)
