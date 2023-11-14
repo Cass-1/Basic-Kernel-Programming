@@ -7,7 +7,7 @@
 
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Cougs"); // Change with your lastname
+MODULE_AUTHOR("Dahle"); // Change with your lastname
 MODULE_DESCRIPTION("CPTS360 Lab 4");
 
 #define DEBUG 1
