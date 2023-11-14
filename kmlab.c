@@ -20,6 +20,7 @@ MODULE_DESCRIPTION("CPTS360 Lab 4");
 #define PROC_FILE_NAME "status" 
 #define PROCFS_MAX_SIZE 1024
 static unsigned long procfs_buffer_size = 0; 
+static char procfs_buffer[PROCFS_MAX_SIZE] = "HelloWorld!\n";
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
 
@@ -36,7 +37,7 @@ struct ll_struct{
 //TODO: The proc_ops
 static struct proc_ops proc_fops = { 
    // .proc_read = procfs_read, 
-   // .proc_write = procfs_write, 
+   .proc_write = procfs_write, 
    // .proc_open = procfs_open, 
    // .proc_release = procfs_close, 
 }; 
