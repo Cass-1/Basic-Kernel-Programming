@@ -1,2 +1,8 @@
 *.json
-
+*.cmd
+*.ko
+*.mod.*
+*.mod
+*.o
+*.symvers
+*.order
