@@ -57,10 +57,30 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
 }
 
 //TODO: procfs_read
+static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_t buffer_length, loff_t *offset)
+{   
+    int len = sizeof(procfs_buffer);
+    ssize_t ret = len;
+    
+    //pr_info("len is %d, offest is %d\n", (int)len, (int)*offset);
+
+    if (*offset >= len) {
+        return 0;
+    }
+    if (copy_to_user(buffer, procfs_buffer, len)) {
+        pr_info("copy_to_user failed\n");
+        ret = 0;
+    } else {
+        pr_info("procfile read /proc/kmlab/%s\n", PROC_FILE_NAME);
+        *offset += len;
+    }
+
+    return ret;
+}
 
 //TODO: The proc_ops
 static struct proc_ops proc_fops = { 
-   // .proc_read = procfs_read, 
+   .proc_read = procfs_read, 
    .proc_write = procfs_write, 
    // .proc_open = procfs_open, 
    // .proc_release = procfs_close, 
