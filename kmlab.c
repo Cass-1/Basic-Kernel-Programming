@@ -20,6 +20,9 @@ MODULE_DESCRIPTION("CPTS360 Lab 4");
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
 
+// Linked list head
+struct list_head my_list;
+
 // Linked list struct
 struct ll_struct{
    struct list_head list;
@@ -28,12 +31,44 @@ struct ll_struct{
 };
 
 static struct proc_ops proc_fops = { 
-   .proc_read = procfs_read, 
-   .proc_write = procfs_write, 
+   // .proc_read = procfs_read, 
+   // .proc_write = procfs_write, 
    // .proc_open = procfs_open, 
    // .proc_release = procfs_close, 
 }; 
 
+// adds a item to the linked list
+int add_node(int PID, int CPUTime)
+{
+   struct ll_struct *new_node = kmalloc((size_t) (sizeof(struct ll_struct)), GFP_KERNEL);
+   if (!new_node) {
+      printk(KERN_INFO
+             "Memory allocation failed, this should never fail due to GFP_KERNEL flag\n");
+      return 1;
+   }
+   new_node->PID = PID;
+   new_node->CPUTime = CPUTime;
+   list_add_tail(&(new_node->list), &my_list);
+   return 0;
+}
+
+// deletes a node from the linked list
+int delete_node(int number)
+{
+   struct ll_struct *entry = NULL, *n;
+   // list_for_each_entry(entry, &my_list, list) {
+   list_for_each_entry_safe(entry, n, &my_list, list) {
+      if (entry->value == number) {
+         printk(KERN_INFO "Found the element %d\n",
+                entry->value);
+         list_del(&(entry->list));
+         kfree(entry);
+         return 0;
+      }
+   }
+   printk(KERN_INFO "Could not find the element %d\n", number);
+   return 1;
+}
 
 // kmlab_init - Called when module is loaded
 int __init kmlab_init(void)
