@@ -14,9 +14,12 @@ MODULE_DESCRIPTION("CPTS360 Lab 4");
 
 #define DEBUG 1
 
+
 // Global variables as needed ...
 #define PROC_DIR_NAME "kmlab" 
 #define PROC_FILE_NAME "status" 
+#define PROCFS_MAX_SIZE 1024
+static unsigned long procfs_buffer_size = 0; 
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
 
@@ -30,12 +33,35 @@ struct ll_struct{
    int CPUTime;
 };
 
+//TODO: The proc_ops
 static struct proc_ops proc_fops = { 
    // .proc_read = procfs_read, 
    // .proc_write = procfs_write, 
    // .proc_open = procfs_open, 
    // .proc_release = procfs_close, 
 }; 
+
+//TODO: procfs_read
+
+//TODO: procfs_write
+static ssize_t procfile_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
+{
+   /* Clear internal buffer */
+	memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
+	
+    procfs_buffer_size = len;
+    if (procfs_buffer_size > PROCFS_MAX_SIZE)
+        procfs_buffer_size = PROCFS_MAX_SIZE;
+
+    if (copy_from_user(procfs_buffer, buff, procfs_buffer_size))
+        return -EFAULT;
+
+    procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
+    *off += procfs_buffer_size;
+    pr_info("procfile write %s\n", procfs_buffer);
+
+    return procfs_buffer_size;
+}
 
 // adds a item to the linked list
 int add_node(int PID, int CPUTime)
@@ -77,6 +103,9 @@ int __init kmlab_init(void)
    pr_info("KMLAB MODULE LOADING\n");
    #endif
    // Insert your code here ...
+
+   // init the kernel linked list
+   INIT_LIST_HEAD(&my_list);
 
    // create the proc directory and file
    proc_dir = proc_mkdir(PROC_DIR_NAME, NULL);
