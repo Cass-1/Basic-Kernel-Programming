@@ -3,6 +3,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/proc_fs.h> 
+#include <linux/types.h>
 #include "kmlab_given.h"
 // Include headers as needed ...
 
@@ -18,10 +19,17 @@ MODULE_DESCRIPTION("CPTS360 Lab 4");
 #define PROC_FILE_NAME "status" 
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
-//TODO: make the proc_ops struct
+
+// Linked list struct
+struct ll_struct{
+   struct list_head list;
+   int PID;
+   int CPUTime;
+};
+
 static struct proc_ops proc_fops = { 
-   // .proc_read = procfs_read, 
-   // .proc_write = procfs_write, 
+   .proc_read = procfs_read, 
+   .proc_write = procfs_write, 
    // .proc_open = procfs_open, 
    // .proc_release = procfs_close, 
 }; 
