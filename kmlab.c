@@ -53,20 +53,20 @@ int add_node(int PID, int CPUTime)
 }
 
 // deletes a node from the linked list
-int delete_node(int number)
+int delete_node(int PID)
 {
    struct ll_struct *entry = NULL, *n;
    // list_for_each_entry(entry, &my_list, list) {
    list_for_each_entry_safe(entry, n, &my_list, list) {
-      if (entry->value == number) {
+      if (entry->PID == PID) {
          printk(KERN_INFO "Found the element %d\n",
-                entry->value);
+                entry->PID);
          list_del(&(entry->list));
          kfree(entry);
          return 0;
       }
    }
-   printk(KERN_INFO "Could not find the element %d\n", number);
+   printk(KERN_INFO "Could not find the element %d\n", PID);
    return 1;
 }
 
