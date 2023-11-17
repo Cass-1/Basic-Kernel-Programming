@@ -114,7 +114,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 
    list_for_each_entry_safe(entry, n, &my_list, list){
       node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
-      sprintf(node_string, "%d: %d", entry->PID, entry->CPUTime);
+      sprintf(node_string, "%d: %d\n", entry->PID, entry->CPUTime);
       if(strlen(node_string) + strlen(procfs_buffer) >= PROCFS_MAX_SIZE){
          printk(KERN_INFO "Buffer overflow\n");
       }
