@@ -74,16 +74,19 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 
    char* temp = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
    unsigned long flags;
-	spin_lock_irqsave(&sp_lock, flags);
+	// spin_lock_irqsave(&sp_lock, flags);
    procfs_buffer[0] = 0;
 
    list_for_each_entry_safe(entry, n, &my_list, list){
       sprintf(temp, "%d: %d", entry->PID, entry->CPUTime);
       if(sizeof(temp) + sizeof(procfs_buffer) + 1 > PROCFS_MAX_SIZE){
-         printk(KERN_ALERT "Buffer overflow\n");
+         printk(KERN_INFO "Buffer overflow\n");
+      }
+      else{
+         strcat(procfs_buffer, temp);
       }
    }
-
+   kfree(temp);
 
    int len = sizeof(procfs_buffer);
    ssize_t ret = len;
@@ -91,9 +94,9 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    //pr_info("len is %d, offest is %d\n", (int)len, (int)*offset);
 
    if (*offset >= len) {
-   return 0;
+      return 0;
    }
-   my_func();
+
    if (copy_to_user(buffer, procfs_buffer, len)) {
       pr_info("copy_to_user failed\n");
       ret = 0;
