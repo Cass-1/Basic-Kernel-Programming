@@ -88,7 +88,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
       }
       kfree(node_string);
    }
-   kfree(node_string);
+   // kfree(node_string);
 
    int len = sizeof(procfs_buffer);
    ssize_t ret = len;
