@@ -171,6 +171,7 @@ int __init kmlab_init(void)
    // init the kernel linked list
    INIT_LIST_HEAD(&my_list);
    add_node(1,1);
+   show_list();
 
    // create the proc directory and file
    proc_dir = proc_mkdir(PROC_DIR_NAME, NULL);
