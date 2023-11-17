@@ -39,7 +39,7 @@ struct ll_struct{
 };
 
 // adds a item to the linked list
-int add_node(int PID, int CPUTime)
+int add_node(int PID)
 {
    struct ll_struct *new_node = kmalloc((size_t) (sizeof(struct ll_struct)), GFP_KERNEL);
    if (!new_node) {
@@ -48,7 +48,7 @@ int add_node(int PID, int CPUTime)
       return 1;
    }
    new_node->PID = PID;
-   new_node->CPUTime = CPUTime;
+   new_node->CPUTime = 0;
    list_add_tail(&(new_node->list), &my_list);
    return 0;
 }
@@ -93,7 +93,7 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
    if (copy_from_user(procfs_buffer, buff, procfs_buffer_size))
       return -EFAULT;
 
-   add_node(simple_strtoul(procfs_buffer));
+   add_node(simple_strtoul(procfs_buffer, NULL, 10));
 
    procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
    *off += procfs_buffer_size;
