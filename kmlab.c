@@ -138,7 +138,7 @@ void show_list(void)
    struct ll_struct *entry = NULL;
 
    list_for_each_entry(entry, &my_list, list) {
-      printk(KERN_INFO "Node is %d\n", entry->value);
+      printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
    }
 }
 
