@@ -79,7 +79,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 
    list_for_each_entry_safe(entry, n, &my_list, list){
       sprintf(temp, "%d: %d", entry->PID, entry->CPUTime);
-      if(sizeof(temp) + sizeof(procfs_buffer) + 1 > PROCFS_MAX_SIZE){
+      if(strlen(temp) + strlen(procfs_buffer) + 1 > PROCFS_MAX_SIZE){
          printk(KERN_INFO "Buffer overflow\n");
       }
       else{
