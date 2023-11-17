@@ -110,7 +110,8 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    char* node_string; // = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
    unsigned long flags;
 	// spin_lock_irqsave(&sp_lock, flags);
-   procfs_buffer[0] = 0;
+   /* Clear internal buffer */
+   memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
 
    list_for_each_entry_safe(entry, n, &my_list, list){
       node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
