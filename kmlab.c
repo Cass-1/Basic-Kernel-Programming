@@ -38,12 +38,45 @@ struct ll_struct{
    int CPUTime;
 };
 
-int my_func(void){
-   char arr[6] = "hello";
-   for(int i = 0; i < 6; i++){
-      procfs_buffer[i] = arr[i];
+// adds a item to the linked list
+int add_node(int PID, int CPUTime)
+{
+   struct ll_struct *new_node = kmalloc((size_t) (sizeof(struct ll_struct)), GFP_KERNEL);
+   if (!new_node) {
+      printk(KERN_INFO
+             "Memory allocation failed, this should never fail due to GFP_KERNEL flag\n");
+      return 1;
    }
-   // procfs_buffer = "hello";
+   new_node->PID = PID;
+   new_node->CPUTime = CPUTime;
+   list_add_tail(&(new_node->list), &my_list);
+   return 0;
+}
+
+void show_list(void)
+{
+   struct ll_struct *entry = NULL;
+
+   list_for_each_entry(entry, &my_list, list) {
+      printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
+   }
+}
+
+// deletes a node from the linked list
+int delete_node(int PID)
+{
+   struct ll_struct *entry = NULL, *n;
+   // list_for_each_entry(entry, &my_list, list) {
+   list_for_each_entry_safe(entry, n, &my_list, list) {
+      if (entry->PID == PID) {
+         printk(KERN_INFO "Found the element %d\n",
+                entry->PID);
+         list_del(&(entry->list));
+         kfree(entry);
+         return 0;
+      }
+   }
+   printk(KERN_INFO "Could not find the element %d\n", PID);
    return 1;
 }
 
@@ -122,47 +155,7 @@ static struct proc_ops proc_fops = {
 
 
 
-// adds a item to the linked list
-int add_node(int PID, int CPUTime)
-{
-   struct ll_struct *new_node = kmalloc((size_t) (sizeof(struct ll_struct)), GFP_KERNEL);
-   if (!new_node) {
-      printk(KERN_INFO
-             "Memory allocation failed, this should never fail due to GFP_KERNEL flag\n");
-      return 1;
-   }
-   new_node->PID = PID;
-   new_node->CPUTime = CPUTime;
-   list_add_tail(&(new_node->list), &my_list);
-   return 0;
-}
 
-void show_list(void)
-{
-   struct ll_struct *entry = NULL;
-
-   list_for_each_entry(entry, &my_list, list) {
-      printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
-   }
-}
-
-// deletes a node from the linked list
-int delete_node(int PID)
-{
-   struct ll_struct *entry = NULL, *n;
-   // list_for_each_entry(entry, &my_list, list) {
-   list_for_each_entry_safe(entry, n, &my_list, list) {
-      if (entry->PID == PID) {
-         printk(KERN_INFO "Found the element %d\n",
-                entry->PID);
-         list_del(&(entry->list));
-         kfree(entry);
-         return 0;
-      }
-   }
-   printk(KERN_INFO "Could not find the element %d\n", PID);
-   return 1;
-}
 
 // kmlab_init - Called when module is loaded
 int __init kmlab_init(void)
