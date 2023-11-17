@@ -26,7 +26,7 @@ static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
 
 // define the spin lock
-static DEFINE_SPINLOCK(spin_lock);
+// static DEFINE_SPINLOCK(spin_lock);
 
 // Linked list head
 struct list_head my_list;
