@@ -133,6 +133,15 @@ int add_node(int PID, int CPUTime)
    return 0;
 }
 
+void show_list(void)
+{
+   struct ll_struct *entry = NULL;
+
+   list_for_each_entry(entry, &my_list, list) {
+      printk(KERN_INFO "Node is %d\n", entry->value);
+   }
+}
+
 // deletes a node from the linked list
 int delete_node(int PID)
 {
@@ -161,6 +170,7 @@ int __init kmlab_init(void)
 
    // init the kernel linked list
    INIT_LIST_HEAD(&my_list);
+   add_node(1,1);
 
    // create the proc directory and file
    proc_dir = proc_mkdir(PROC_DIR_NAME, NULL);
