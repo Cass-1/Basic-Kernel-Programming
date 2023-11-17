@@ -6,7 +6,8 @@
 #include <linux/types.h>
 #include "kmlab_given.h"
 // Include headers as needed ...
-
+#include <linux/string.h>
+#include <linux/spinlock.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Dahle"); // Change with your lastname
@@ -20,9 +21,12 @@ MODULE_DESCRIPTION("CPTS360 Lab 4");
 #define PROC_FILE_NAME "status" 
 #define PROCFS_MAX_SIZE 1024
 static unsigned long procfs_buffer_size = 0; 
-static char procfs_buffer[PROCFS_MAX_SIZE] = "HelloWorld!\n";
+static char procfs_buffer[PROCFS_MAX_SIZE] = "";
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
+
+// define the spin lock
+static DEFINE_SPINLOCK(spin_lock);
 
 // Linked list head
 struct list_head my_list;
@@ -34,48 +38,71 @@ struct ll_struct{
    int CPUTime;
 };
 
-
+int my_func(void){
+   char arr[6] = "hello";
+   for(int i = 0; i < 6; i++){
+      procfs_buffer[i] = arr[i];
+   }
+   // procfs_buffer = "hello";
+   return 1;
+}
 
 //TODO: procfs_write
 static ssize_t procfs_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
 {
    /* Clear internal buffer */
-	memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
-	
-    procfs_buffer_size = len;
-    if (procfs_buffer_size > PROCFS_MAX_SIZE)
-        procfs_buffer_size = PROCFS_MAX_SIZE;
+   memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
 
-    if (copy_from_user(procfs_buffer, buff, procfs_buffer_size))
-        return -EFAULT;
+   procfs_buffer_size = len;
+   if (procfs_buffer_size > PROCFS_MAX_SIZE)
+      procfs_buffer_size = PROCFS_MAX_SIZE;
 
-    procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
-    *off += procfs_buffer_size;
-    pr_info("procfile write %s\n", procfs_buffer);
+   if (copy_from_user(procfs_buffer, buff, procfs_buffer_size))
+      return -EFAULT;
 
-    return procfs_buffer_size;
+   procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
+   *off += procfs_buffer_size;
+   pr_info("procfile write %s\n", procfs_buffer);
+
+   return procfs_buffer_size;
 }
 
 //TODO: procfs_read
 static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_t buffer_length, loff_t *offset)
-{   
-    int len = sizeof(procfs_buffer);
-    ssize_t ret = len;
-    
-    //pr_info("len is %d, offest is %d\n", (int)len, (int)*offset);
+{
+   struct ll_struct *entry = NULL, *n;
 
-    if (*offset >= len) {
-        return 0;
-    }
-    if (copy_to_user(buffer, procfs_buffer, len)) {
-        pr_info("copy_to_user failed\n");
-        ret = 0;
-    } else {
-        pr_info("procfile read /proc/kmlab/%s\n", PROC_FILE_NAME);
-        *offset += len;
-    }
+   char* temp = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
+   unsigned long flags;
+	spin_lock_irqsave(&sp_lock, flags);
+   procfs_buffer[0] = 0;
 
-    return ret;
+   list_for_each_entry_safe(entry, n, &my_list, list){
+      sprintf(temp, "%d: %d", entry->PID, entry->CPUTime);
+      if(sizeof(temp) + sizeof(procfs_buffer) + 1 > PROCFS_MAX_SIZE){
+         printk(KERN_ALERT "Buffer overflow\n");
+      }
+   }
+
+
+   int len = sizeof(procfs_buffer);
+   ssize_t ret = len;
+   
+   //pr_info("len is %d, offest is %d\n", (int)len, (int)*offset);
+
+   if (*offset >= len) {
+   return 0;
+   }
+   my_func();
+   if (copy_to_user(buffer, procfs_buffer, len)) {
+      pr_info("copy_to_user failed\n");
+      ret = 0;
+   } else {
+      pr_info("procfile read /proc/kmlab/%s\n", PROC_FILE_NAME);
+      *offset += len;
+   }
+
+   return ret;
 }
 
 //TODO: The proc_ops
