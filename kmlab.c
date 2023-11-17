@@ -72,21 +72,21 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 {
    struct ll_struct *entry = NULL, *n;
 
-   char* temp = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
+   char* node_string = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
    unsigned long flags;
 	// spin_lock_irqsave(&sp_lock, flags);
    procfs_buffer[0] = 0;
 
    list_for_each_entry_safe(entry, n, &my_list, list){
-      sprintf(temp, "%d: %d", entry->PID, entry->CPUTime);
-      if(strlen(temp) + strlen(procfs_buffer) + 1 > PROCFS_MAX_SIZE){
+      sprintf(node_string, "%d: %d", entry->PID, entry->CPUTime);
+      if(strlen(node_string) + strlen(procfs_buffer) + 1 > PROCFS_MAX_SIZE){
          printk(KERN_INFO "Buffer overflow\n");
       }
       else{
-         strcat(procfs_buffer, temp);
+         strcat(procfs_buffer, node_string);
       }
    }
-   kfree(temp);
+   kfree(node_string);
 
    int len = sizeof(procfs_buffer);
    ssize_t ret = len;
