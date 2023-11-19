@@ -8,6 +8,8 @@
 // Include headers as needed ...
 #include <linux/string.h>
 #include <linux/spinlock.h>
+#include <linux/jiffies.h>
+#include <linux/timer.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Dahle"); // Change with your lastname
@@ -16,7 +18,11 @@ MODULE_DESCRIPTION("CPTS360 Lab 4");
 #define DEBUG 1
 
 
-// Global variables as needed ...
+/* -------------------------------------------------------------------------- */
+/*                              Global Variables                              */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------- procfile -------------------------------- */
 #define PROC_DIR_NAME "kmlab" 
 #define PROC_FILE_NAME "status" 
 #define PROCFS_MAX_SIZE 1024
@@ -25,9 +31,14 @@ static char procfs_buffer[PROCFS_MAX_SIZE] = "";
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *proc_file;
 
+/* ----------------------------- timer variables ---------------------------- */
+static struct timer_list my_timer;
+int time_interval = 5000;
+
 // define the spin lock
 // static DEFINE_SPINLOCK(spin_lock);
 
+/* ------------------------------- linked list ------------------------------ */
 // Linked list head
 struct list_head my_list;
 
@@ -37,6 +48,20 @@ struct ll_struct{
    int PID;
    int CPUTime;
 };
+
+/* -------------------------------------------------------------------------- */
+/*                                Kernel Timer                                */
+/* -------------------------------------------------------------------------- */
+void my_timer_callback(struct timer_list *timer) {
+   pr_info("This line is printed every %d ms.\n", time_interval);
+
+   /* this will make a periodic timer */
+   mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             Linked List Helpers                            */
+/* -------------------------------------------------------------------------- */
 
 // adds a item to the linked list
 int add_node(int PID)
@@ -79,6 +104,10 @@ int delete_node(int PID)
    printk(KERN_INFO "Could not find the element %d\n", PID);
    return 1;
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                  Proc File                                 */
+/* -------------------------------------------------------------------------- */
 
 //TODO: procfs_write
 static ssize_t procfs_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
@@ -156,7 +185,9 @@ static struct proc_ops proc_fops = {
 
 
 
-
+/* -------------------------------------------------------------------------- */
+/*                            Module Init and Exit                            */
+/* -------------------------------------------------------------------------- */
 
 // kmlab_init - Called when module is loaded
 int __init kmlab_init(void)
@@ -176,6 +207,10 @@ int __init kmlab_init(void)
       pr_alert("Error:Could not initialize /proc/%s\n", PROC_FILE_NAME); 
       return -ENOMEM; 
     } 
+
+   // initialize timer
+   timer_setup(&my_timer, my_timer_callback, 0);
+   mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
    
    pr_info("KMLAB MODULE LOADED\n");
    return 0;   
@@ -188,7 +223,11 @@ void __exit kmlab_exit(void)
    pr_info("KMLAB MODULE UNLOADING\n");
    #endif
    // Insert your code here ...
+   // remove the proc directory
    proc_remove(proc_dir);
+
+   // remove timer
+   del_timer(&my_timer);
    
 
    pr_info("KMLAB MODULE UNLOADED\n");
