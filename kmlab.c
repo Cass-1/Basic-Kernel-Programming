@@ -58,7 +58,26 @@ static struct work_struct my_work;
 /*                                Work Handler                                */
 /* -------------------------------------------------------------------------- */
 static void work_handler(struct work_struct *work){
-   pr_info("This line is printed every %d ms.\n", time_interval);
+
+   // variables
+   unsigned long flags;
+   unsigned long cpu_time;
+   struct ll_struct *entry = NULL;
+
+   // loop through kernel linked list and update process CPUTimes
+   spin_lock_irqsave(&my_lock, flags);
+   list_for_each_entry_safe(entry, &my_list, list) {
+      if(get_cpu_use(entry->pid, &cpu_time) == 0){
+         // update process cpu time
+         entry->CPUTime = cpu_time;
+      }
+      else{
+         // remove process from linked list
+         delete_node(entry->pid);
+      }
+   }
+   spin_unlock_irqrestore(&my_lock, flags);
+   
 
 }
 
@@ -99,7 +118,7 @@ void show_list(void)
    unsigned long flags;
    struct ll_struct *entry = NULL;
    spin_lock_irqsave(&my_lock, flags);
-   list_for_each_entry(entry, &my_list, list) {
+   list_for_each_entry_safe(entry, &my_list, list) {
       printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
    }
    spin_unlock_irqrestore(&my_lock, flags);
