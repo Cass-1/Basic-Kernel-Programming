@@ -11,17 +11,15 @@
 #include <linux/jiffies.h>
 #include <linux/timer.h>
 
+/* -------------------------------- Metadata -------------------------------- */
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Dahle"); // Change with your lastname
 MODULE_DESCRIPTION("CPTS360 Lab 4");
 
-#define DEBUG 1
-
-
 /* -------------------------------------------------------------------------- */
 /*                              Global Variables                              */
 /* -------------------------------------------------------------------------- */
-
+#define DEBUG 1
 /* -------------------------------- procfile -------------------------------- */
 #define PROC_DIR_NAME "kmlab" 
 #define PROC_FILE_NAME "status" 
