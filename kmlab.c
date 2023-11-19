@@ -124,10 +124,11 @@ static void work_handler(struct work_struct *work){
          // update process cpu time
          entry->CPUTime = cpu_time;
       }
-      // else{
-      //    // remove process from linked list
-      //    delete_node(entry->PID);
-      // }
+      else{
+         // remove process from linked list
+         // delete_node(entry->PID);
+         printk(KERN_INFO "no process");
+      }
    }
    spin_unlock_irqrestore(&my_lock, flags);
    
