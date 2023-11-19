@@ -166,26 +166,32 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 {
    unsigned long flags;
    struct ll_struct *entry = NULL, *n;
+   char* node_string;
 
-   char* node_string; // = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
-	// spin_lock_irqsave(&sp_lock, flags);
-   /* Clear internal buffer */
+   //Clear internal buffer
+   spin_lock_irqsave(&my_lock, flags);
    memset(&procfs_buffer[0], 0, sizeof(procfs_buffer)); 
+   spin_unlock_irqrestore(&my_lock, flags);
 
+   /* --------------------- Write Process Data to Procfile --------------------- */
    spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list){
+      // allocate a string to store the node information
       node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
       sprintf(node_string, "%d: %d\n", entry->PID, entry->CPUTime);
+      // check for buffer overflow
       if(strlen(node_string) + strlen(procfs_buffer) >= PROCFS_MAX_SIZE){
          printk(KERN_INFO "Buffer overflow\n");
       }
       else{
+         // add node info to the procfs_buffer
          strcat(procfs_buffer, node_string);
       }
+      // deallocate string
       kfree(node_string);
    }
    spin_unlock_irqrestore(&my_lock, flags);
-   // kfree(node_string);
+   /* -------------------------------------------------------------------------- */
 
    int len = sizeof(procfs_buffer);
    ssize_t ret = len;
