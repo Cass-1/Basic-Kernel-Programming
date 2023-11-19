@@ -62,11 +62,11 @@ static void work_handler(struct work_struct *work){
    // variables
    unsigned long flags;
    unsigned long cpu_time;
-   struct ll_struct *entry = NULL;
+   struct ll_struct *entry = NULL, *n;
 
    // loop through kernel linked list and update process CPUTimes
    spin_lock_irqsave(&my_lock, flags);
-   list_for_each_entry_safe(entry, &my_list, list) {
+   list_for_each_entry_safe(entry, n, &my_list, list) {
       if(get_cpu_use(entry->pid, &cpu_time) == 0){
          // update process cpu time
          entry->CPUTime = cpu_time;
@@ -116,9 +116,9 @@ int add_node(int PID)
 void show_list(void)
 {
    unsigned long flags;
-   struct ll_struct *entry = NULL;
+   struct ll_struct *entry = NULL,*n;
    spin_lock_irqsave(&my_lock, flags);
-   list_for_each_entry_safe(entry, &my_list, list) {
+   list_for_each_entry_safe(entry, n, &my_list, list) {
       printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
    }
    spin_unlock_irqrestore(&my_lock, flags);
