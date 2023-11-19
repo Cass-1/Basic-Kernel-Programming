@@ -110,7 +110,7 @@ int delete_node(int PID)
 /*                                Work Handler                                */
 /* -------------------------------------------------------------------------- */
 static void work_handler(struct work_struct *work){
-
+   printk(KERN_INFO "work handler called\n");
    // variables
    unsigned long flags;
    unsigned long cpu_time;
@@ -119,14 +119,15 @@ static void work_handler(struct work_struct *work){
    // loop through kernel linked list and update process CPUTimes
    spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list) {
-      if(get_cpu_use(entry->PID, &cpu_time) == 0){
-         // update process cpu time
-         entry->CPUTime = cpu_time;
-      }
-      else{
-         // remove process from linked list
-         delete_node(entry->PID);
-      }
+      printk(KERN_INFO "for each list entry");
+      // if(get_cpu_use(entry->PID, &cpu_time) == 0){
+      //    // update process cpu time
+      //    entry->CPUTime = cpu_time;
+      // }
+      // else{
+      //    // remove process from linked list
+      //    delete_node(entry->PID);
+      // }
    }
    spin_unlock_irqrestore(&my_lock, flags);
    
