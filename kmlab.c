@@ -66,7 +66,7 @@ static void work_handler(struct work_struct *work){
 /*                                Kernel Timer                                */
 /* -------------------------------------------------------------------------- */
 void my_timer_callback(struct timer_list *timer) {
-   pr_info("This line is printed every %d ms.\n", time_interval);
+   // pr_info("This line is printed every %d ms.\n", time_interval);
 
    INIT_WORK(&my_work, work_handler);
 	queue_work(system_wq, &my_work);
