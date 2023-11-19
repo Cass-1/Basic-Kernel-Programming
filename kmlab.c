@@ -122,6 +122,7 @@ static void work_handler(struct work_struct *work){
       printk(KERN_INFO "for each list entry");
       if(get_cpu_use(entry->PID, &cpu_time) == 0){
          // update process cpu time
+         printk(KERN_INFO "update cpu time");
          entry->CPUTime = cpu_time;
       }
       else{
