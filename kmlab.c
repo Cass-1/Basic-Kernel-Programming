@@ -54,45 +54,6 @@ static DEFINE_SPINLOCK(my_lock);
 /* ------------------------------- Work Queue ------------------------------- */
 static struct work_struct my_work;
 
-/* -------------------------------------------------------------------------- */
-/*                                Work Handler                                */
-/* -------------------------------------------------------------------------- */
-static void work_handler(struct work_struct *work){
-
-   // variables
-   unsigned long flags;
-   unsigned long cpu_time;
-   struct ll_struct *entry = NULL, *n;
-
-   // loop through kernel linked list and update process CPUTimes
-   spin_lock_irqsave(&my_lock, flags);
-   list_for_each_entry_safe(entry, n, &my_list, list) {
-      if(get_cpu_use(entry->pid, &cpu_time) == 0){
-         // update process cpu time
-         entry->CPUTime = cpu_time;
-      }
-      else{
-         // remove process from linked list
-         delete_node(entry->pid);
-      }
-   }
-   spin_unlock_irqrestore(&my_lock, flags);
-   
-
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                Kernel Timer                                */
-/* -------------------------------------------------------------------------- */
-void my_timer_callback(struct timer_list *timer) {
-   // pr_info("This line is printed every %d ms.\n", time_interval);
-
-   INIT_WORK(&my_work, work_handler);
-	queue_work(system_wq, &my_work);
-
-   /* this will make a periodic timer */
-   mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
-}
 
 /* -------------------------------------------------------------------------- */
 /*                             Linked List Helpers                            */
@@ -143,6 +104,46 @@ int delete_node(int PID)
    spin_unlock_irqrestore(&my_lock, flags);
    printk(KERN_INFO "Could not find the element %d\n", PID);
    return 1;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Work Handler                                */
+/* -------------------------------------------------------------------------- */
+static void work_handler(struct work_struct *work){
+
+   // variables
+   unsigned long flags;
+   unsigned long cpu_time;
+   struct ll_struct *entry = NULL, *n;
+
+   // loop through kernel linked list and update process CPUTimes
+   spin_lock_irqsave(&my_lock, flags);
+   list_for_each_entry_safe(entry, n, &my_list, list) {
+      if(get_cpu_use(entry->PID, &cpu_time) == 0){
+         // update process cpu time
+         entry->CPUTime = cpu_time;
+      }
+      else{
+         // remove process from linked list
+         delete_node(entry->PID);
+      }
+   }
+   spin_unlock_irqrestore(&my_lock, flags);
+   
+
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Kernel Timer                                */
+/* -------------------------------------------------------------------------- */
+void my_timer_callback(struct timer_list *timer) {
+   // pr_info("This line is printed every %d ms.\n", time_interval);
+
+   INIT_WORK(&my_work, work_handler);
+	queue_work(system_wq, &my_work);
+
+   /* this will make a periodic timer */
+   mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
 }
 
 /* -------------------------------------------------------------------------- */
