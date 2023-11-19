@@ -34,7 +34,7 @@ static struct timer_list my_timer;
 int time_interval = 5000;
 
 // define the spin lock
-// static DEFINE_SPINLOCK(spin_lock);
+// static DEFINE_SPINLOCK(my_lock);
 
 /* ------------------------------- linked list ------------------------------ */
 // Linked list head
@@ -48,7 +48,7 @@ struct ll_struct{
 };
 
 /* -------------------------------- Spin Lock ------------------------------- */
-static DEFINE_SPINLOCK(spin_lock);
+static DEFINE_SPINLOCK(my_lock);
 
 /* -------------------------------------------------------------------------- */
 /*                                Kernel Timer                                */
@@ -87,7 +87,7 @@ void show_list(void)
    list_for_each_entry(entry, &my_list, list) {
       printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
    }
-   spin_unlock_irqrestore(&spin_lock, flags);
+   spin_unlock_irqrestore(&my_lock, flags);
 }
 
 // deletes a node from the linked list
@@ -106,7 +106,7 @@ int delete_node(int PID)
          return 0;
       }
    }
-   spin_unlock_irqrestore(&spin_lock, flags);
+   spin_unlock_irqrestore(&my_lock, flags);
    printk(KERN_INFO "Could not find the element %d\n", PID);
    return 1;
 }
@@ -144,7 +144,6 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    struct ll_struct *entry = NULL, *n;
 
    char* node_string; // = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
-   unsigned long flags;
 	// spin_lock_irqsave(&sp_lock, flags);
    /* Clear internal buffer */
    memset(&procfs_buffer[0], 0, sizeof(procfs_buffer)); 
@@ -161,7 +160,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
       }
       kfree(node_string);
    }
-   spin_unlock_irqrestore(&spin_lock, flags);
+   spin_unlock_irqrestore(&my_lock, flags);
    // kfree(node_string);
 
    int len = sizeof(procfs_buffer);
