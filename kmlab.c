@@ -120,10 +120,10 @@ static void work_handler(struct work_struct *work){
    spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list) {
       printk(KERN_INFO "for each list entry");
-      // if(get_cpu_use(entry->PID, &cpu_time) == 0){
-      //    // update process cpu time
-      //    entry->CPUTime = cpu_time;
-      // }
+      if(get_cpu_use(entry->PID, &cpu_time) == 0){
+         // update process cpu time
+         entry->CPUTime = cpu_time;
+      }
       // else{
       //    // remove process from linked list
       //    delete_node(entry->PID);
