@@ -9,7 +9,9 @@ void register_process(unsigned int pid)
 {
     
      // Insert your code here ...
-   
+    FILE* file = fopen("/proc/kmlab/status", "w");
+    fprintf(file, "%u", pid);
+    fclose(file);
 }
 
 int main(int argc, char* argv[])
