@@ -47,6 +47,9 @@ struct ll_struct{
    int CPUTime;
 };
 
+/* -------------------------------- Spin Lock ------------------------------- */
+static DEFINE_SPINLOCK(spin_lock);
+
 /* -------------------------------------------------------------------------- */
 /*                                Kernel Timer                                */
 /* -------------------------------------------------------------------------- */
@@ -78,18 +81,22 @@ int add_node(int PID)
 
 void show_list(void)
 {
+   unsigned long flags;
    struct ll_struct *entry = NULL;
-
+   spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry(entry, &my_list, list) {
       printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
    }
+   spin_unlock_irqrestore(&spin_lock, flags);
 }
 
 // deletes a node from the linked list
 int delete_node(int PID)
 {
+   unsigned long flags;
    struct ll_struct *entry = NULL, *n;
    // list_for_each_entry(entry, &my_list, list) {
+   spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list) {
       if (entry->PID == PID) {
          printk(KERN_INFO "Found the element %d\n",
@@ -99,6 +106,7 @@ int delete_node(int PID)
          return 0;
       }
    }
+   spin_unlock_irqrestore(&spin_lock, flags);
    printk(KERN_INFO "Could not find the element %d\n", PID);
    return 1;
 }
@@ -132,6 +140,7 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
 //TODO: procfs_read
 static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_t buffer_length, loff_t *offset)
 {
+   unsigned long flags;
    struct ll_struct *entry = NULL, *n;
 
    char* node_string; // = kmalloc(PROCFS_MAX_SIZE, GFP_KERNEL);
@@ -140,6 +149,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    /* Clear internal buffer */
    memset(&procfs_buffer[0], 0, sizeof(procfs_buffer)); 
 
+   spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list){
       node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
       sprintf(node_string, "%d: %d\n", entry->PID, entry->CPUTime);
@@ -151,6 +161,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
       }
       kfree(node_string);
    }
+   spin_unlock_irqrestore(&spin_lock, flags);
    // kfree(node_string);
 
    int len = sizeof(procfs_buffer);
