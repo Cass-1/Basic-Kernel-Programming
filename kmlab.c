@@ -49,12 +49,27 @@ struct ll_struct{
 
 /* -------------------------------- Spin Lock ------------------------------- */
 static DEFINE_SPINLOCK(my_lock);
+//TODO: need to lock all shared datastructures and variables
+
+/* ------------------------------- Work Queue ------------------------------- */
+static struct work_struct my_work;
+
+/* -------------------------------------------------------------------------- */
+/*                                Work Handler                                */
+/* -------------------------------------------------------------------------- */
+static void work_handler(struct work_struct *work){
+   pr_info("This line is printed every %d ms.\n", time_interval);
+
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                Kernel Timer                                */
 /* -------------------------------------------------------------------------- */
 void my_timer_callback(struct timer_list *timer) {
    pr_info("This line is printed every %d ms.\n", time_interval);
+
+   INIT_WORK(&my_work, work_handler);
+	queue_work(system_wq, &my_work);
 
    /* this will make a periodic timer */
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
@@ -118,9 +133,14 @@ int delete_node(int PID)
 //TODO: procfs_write
 static ssize_t procfs_write(struct file *file, const char __user *buff, size_t len, loff_t *off)
 {
+   unsigned long flags;
+
+   /* ------------------------------ lock procfile ----------------------------- */
+   spin_lock_irqsave(&my_lock, flags);
+
    /* Clear internal buffer */
    memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
-
+   
    procfs_buffer_size = len;
    if (procfs_buffer_size > PROCFS_MAX_SIZE)
       procfs_buffer_size = PROCFS_MAX_SIZE;
@@ -131,6 +151,10 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
    add_node(simple_strtoul(procfs_buffer, NULL, 10));
 
    procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
+
+   /* ----------------------------- unlock procfile ---------------------------- */
+   spin_unlock_irqrestore(&my_lock, flags);
+
    *off += procfs_buffer_size;
    pr_info("procfile write %s\n", procfs_buffer);
 
