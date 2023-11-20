@@ -44,7 +44,7 @@ struct list_head my_list;
 struct ll_struct{
    struct list_head list;
    int PID;
-   int CPUTime;
+   unsigned long CPUTime;
 };
 
 /* -------------------------------- Spin Lock ------------------------------- */
@@ -122,7 +122,8 @@ static void work_handler(struct work_struct *work){
       printk(KERN_INFO "for each list entry");
       if(get_cpu_use(entry->PID, &(entry->CPUTime)) != 0){
          // remove process from linked list
-         delete_node(entry->PID);
+         list_del(&(entry->list));
+	      kfree(del);
       }
    
    }
