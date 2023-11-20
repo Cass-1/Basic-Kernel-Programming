@@ -116,9 +116,10 @@ static void work_handler(struct work_struct *work){
 
    // variables
    struct ll_struct *entry = NULL, *n;
+   unsigned long flags;
 
    // loop through kernel linked list and update process CPUTimes
-   // spin_lock_irqsave(&my_lock, flags);
+   spin_lock_irqsave(&my_lock, flags);
    // show_list();
    list_for_each_entry_safe(entry, n, &my_list, list) {
       printk(KERN_INFO "for each list entry");
@@ -131,7 +132,7 @@ static void work_handler(struct work_struct *work){
       }
    
    }
-   // spin_unlock_irqrestore(&my_lock, flags);
+   spin_unlock_irqrestore(&my_lock, flags);
    
 
 }
