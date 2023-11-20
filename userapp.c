@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     while (1) {
         if ((int)(time(NULL) - start_time) > __expire) {
             print_procfs();
-            printf("Process %d is finished", (int)getpid());
+            printf("Process %d is finished\n", (int)getpid());
             break;
         }
         slow_fibbonacci(5);
