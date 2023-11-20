@@ -16,6 +16,7 @@ void register_process(unsigned int pid)
 
 // print out proc file
 int print_procfs(){
+    printf("\nUser program prints procfs: \n");
     FILE* file = fopen("/proc/kmlab/status", "r");
     char c;
     if (file == NULL) 
@@ -56,16 +57,16 @@ int main(int argc, char* argv[])
     }
 
     register_process(getpid());
-    print_procfs();
+    // print_procfs();
     
     // Terminate user application if the time is expired
     while (1) {
         if ((int)(time(NULL) - start_time) > __expire) {
-            printf("%d finished\n", (int) getpid());
+            print_procfs();
+            printf("Process %d is finished", (int)getpid());
             break;
         }
-        slow_fibbonacci(41);
-        print_procfs();
+        slow_fibbonacci(5);
     }
 
 	return 0;
