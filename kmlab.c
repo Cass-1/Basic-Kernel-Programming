@@ -184,7 +184,6 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
    procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
    spin_unlock_irqrestore(&my_lock, flags);
 
-   /* ----------------------------- unlock procfile ---------------------------- */
    
 
    *off += procfs_buffer_size;
