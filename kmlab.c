@@ -88,6 +88,17 @@ void show_list(void)
    spin_unlock_irqrestore(&my_lock, flags);
 }
 
+void delete_list(void){
+   unsigned long flags;
+   struct ll_struct *entry = NULL,*n;
+   spin_lock_irqsave(&my_lock, flags);
+   list_for_each_entry_safe(entry, n, &my_list, list) {
+      list_del(&(entry->list));
+      kfree(entry);
+   }
+   spin_unlock_irqrestore(&my_lock, flags);
+}
+
 // deletes a node from the linked list
 int delete_node(int PID)
 {
@@ -288,6 +299,10 @@ void __exit kmlab_exit(void)
    pr_info("KMLAB MODULE UNLOADING\n");
    #endif
    // Insert your code here ...
+
+   // deletes the items in kernel linked list
+   delete_list();
+   
    // remove the proc file and directory
    proc_remove(proc_file);
    proc_remove(proc_dir);
