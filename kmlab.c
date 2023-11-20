@@ -53,6 +53,7 @@ static DEFINE_SPINLOCK(my_lock);
 
 /* ------------------------------- Work Queue ------------------------------- */
 static struct work_struct my_work;
+static struct workqueue_struct *queue = NULL;
 
 
 /* -------------------------------------------------------------------------- */
@@ -273,6 +274,7 @@ int __init kmlab_init(void)
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
 
    // initalize work queue
+   queue = alloc_workqueue("KMLAB", WQ_UNBOUND, 1);
    INIT_WORK(&my_work, work_handler);
    
    pr_info("KMLAB MODULE LOADED\n");
@@ -291,6 +293,9 @@ void __exit kmlab_exit(void)
 
    // remove timer
    del_timer(&my_timer);
+
+   // removes queue
+   destroy_workqueue(queue);
    
 
    pr_info("KMLAB MODULE UNLOADED\n");
