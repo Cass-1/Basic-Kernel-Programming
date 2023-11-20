@@ -10,6 +10,8 @@
 #include <linux/spinlock.h>
 #include <linux/jiffies.h>
 #include <linux/timer.h>
+#include <linux/uaccess.h>
+#include <linux/printk.h>
 
 /* -------------------------------- Metadata -------------------------------- */
 MODULE_LICENSE("GPL");
@@ -143,7 +145,7 @@ void my_timer_callback(struct timer_list *timer) {
    // pr_info("This line is printed every %d ms.\n", time_interval);
 
    
-	queue_work(system_wq, &my_work);
+	schedule_work(&my_work);
 
    /* this will make a periodic timer */
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
@@ -189,7 +191,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 {
    unsigned long flags;
    struct ll_struct *entry = NULL, *n;
-   char* node_string;
+   char* node_string = "";
 
    //Clear internal buffer
    spin_lock_irqsave(&my_lock, flags);
@@ -200,7 +202,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list){
       // allocate a string to store the node information
-      node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
+      // node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
       sprintf(node_string, "%d: %d\n", entry->PID, entry->CPUTime);
       // check for buffer overflow
       if(strlen(node_string) + strlen(procfs_buffer) >= PROCFS_MAX_SIZE){
@@ -211,7 +213,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
          strcat(procfs_buffer, node_string);
       }
       // deallocate string
-      kfree(node_string);
+      // kfree(node_string);
    }
    spin_unlock_irqrestore(&my_lock, flags);
    /* -------------------------------------------------------------------------- */
