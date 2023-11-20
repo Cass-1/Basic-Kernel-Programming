@@ -83,7 +83,7 @@ void show_list(void)
    struct ll_struct *entry = NULL,*n;
    spin_lock_irqsave(&my_lock, flags);
    list_for_each_entry_safe(entry, n, &my_list, list) {
-      printk(KERN_INFO "Node is %d: %d\n", entry->PID, entry->CPUTime);
+      printk(KERN_INFO "Node is %d: %ld\n", entry->PID, entry->CPUTime);
    }
    spin_unlock_irqrestore(&my_lock, flags);
 }
@@ -113,10 +113,8 @@ int delete_node(int PID)
 /*                                Work Handler                                */
 /* -------------------------------------------------------------------------- */
 static void work_handler(struct work_struct *work){
-   printk(KERN_INFO "work handler called\n");
+
    // variables
-   unsigned long flags;
-   unsigned long cpu_time;
    struct ll_struct *entry = NULL, *n;
 
    // loop through kernel linked list and update process CPUTimes
@@ -124,7 +122,7 @@ static void work_handler(struct work_struct *work){
    // show_list();
    list_for_each_entry_safe(entry, n, &my_list, list) {
       printk(KERN_INFO "for each list entry");
-      pr_info(KERN_INFO "info %d: %u", entry->PID, entry->CPUTime);
+      pr_info(KERN_INFO "info %d: %ld", entry->PID, entry->CPUTime);
       if(get_cpu_use(entry->PID, &(entry->CPUTime)) != 0){
          // remove process from linked list
          pr_info(KERN_INFO "deleted %d", entry->PID);
@@ -193,6 +191,8 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    struct ll_struct *entry = NULL, *n;
    // char* node_string = NULL;
    char node_string[100] = "";
+   int len = sizeof(procfs_buffer);
+   ssize_t ret = len;
 
    //Clear internal buffer
    spin_lock_irqsave(&my_lock, flags);
@@ -219,8 +219,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    spin_unlock_irqrestore(&my_lock, flags);
    /* -------------------------------------------------------------------------- */
 
-   int len = sizeof(procfs_buffer);
-   ssize_t ret = len;
+   
    
    //pr_info("len is %d, offest is %d\n", (int)len, (int)*offset);
 
