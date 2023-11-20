@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
     // Terminate user application if the time is expired
     while (1) {
         if ((int)(time(NULL) - start_time) > __expire) {
+            printf("%d finished\n", (int) getpid());
             break;
         }
         slow_fibbonacci(41);
