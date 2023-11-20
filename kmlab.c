@@ -118,13 +118,13 @@ static void work_handler(struct work_struct *work){
 
    // loop through kernel linked list and update process CPUTimes
    // spin_lock_irqsave(&my_lock, flags);
-   show_list();
+   // show_list();
    list_for_each_entry_safe(entry, n, &my_list, list) {
       printk(KERN_INFO "for each list entry");
-      pr_info(KERN_INFO, "info %d: %u", entry->PID, entry->CPUTime);
+      pr_info(KERN_INFO "info %d: %u", entry->PID, entry->CPUTime);
       if(get_cpu_use(entry->PID, &(entry->CPUTime)) != 0){
          // remove process from linked list
-         pr_info(KERN_INFO, "deleted %d", entry->PID);
+         pr_info(KERN_INFO "deleted %d", entry->PID);
          list_del(&(entry->list));
 	      kfree(entry);
       }
