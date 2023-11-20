@@ -141,11 +141,7 @@ static void work_handler(struct work_struct *work){
 /*                                Kernel Timer                                */
 /* -------------------------------------------------------------------------- */
 void my_timer_callback(struct timer_list *timer) {
-   // pr_info("This line is printed every %d ms.\n", time_interval);
-
-   
 	schedule_work(&my_work);
-
    /* this will make a periodic timer */
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
 }
@@ -159,12 +155,11 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
 {
    unsigned long flags;
 
-   /* ------------------------------ lock procfile ----------------------------- */
+   // clear internal buffer
    spin_lock_irqsave(&my_lock, flags);
-
-   /* Clear internal buffer */
    memset(&procfs_buffer[0], 0, sizeof(procfs_buffer));
-   
+   spin_unlock_irqrestore(&my_lock, flags);
+
    procfs_buffer_size = len;
    if (procfs_buffer_size > PROCFS_MAX_SIZE)
       procfs_buffer_size = PROCFS_MAX_SIZE;
@@ -174,10 +169,12 @@ static ssize_t procfs_write(struct file *file, const char __user *buff, size_t l
 
    add_node(simple_strtoul(procfs_buffer, NULL, 10));
 
+   spin_lock_irqsave(&my_lock, flags);
    procfs_buffer[procfs_buffer_size & (PROCFS_MAX_SIZE - 1)] = '\0';
+   spin_unlock_irqrestore(&my_lock, flags);
 
    /* ----------------------------- unlock procfile ---------------------------- */
-   spin_unlock_irqrestore(&my_lock, flags);
+   
 
    *off += procfs_buffer_size;
    pr_info("procfile write %s\n", procfs_buffer);
