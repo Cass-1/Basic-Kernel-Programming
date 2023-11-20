@@ -191,7 +191,8 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 {
    unsigned long flags;
    struct ll_struct *entry = NULL, *n;
-   char* node_string = NULL;
+   // char* node_string = NULL;
+   char node_string[100] = "";
 
    //Clear internal buffer
    spin_lock_irqsave(&my_lock, flags);
@@ -203,7 +204,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
    list_for_each_entry_safe(entry, n, &my_list, list){
       // allocate a string to store the node information
       // node_string = kmalloc(2*sizeof(entry), GFP_KERNEL);
-      sprintf(node_string, "%d: %d\n", entry->PID, entry->CPUTime);
+      sprintf(node_string, "%d: %ld\n", entry->PID, entry->CPUTime);
       // check for buffer overflow
       if(strlen(node_string) + strlen(procfs_buffer) >= PROCFS_MAX_SIZE){
          printk(KERN_INFO "Buffer overflow\n");
