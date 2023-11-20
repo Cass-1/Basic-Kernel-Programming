@@ -117,17 +117,20 @@ static void work_handler(struct work_struct *work){
    struct ll_struct *entry = NULL, *n;
 
    // loop through kernel linked list and update process CPUTimes
-   spin_lock_irqsave(&my_lock, flags);
+   // spin_lock_irqsave(&my_lock, flags);
+   show_list();
    list_for_each_entry_safe(entry, n, &my_list, list) {
       printk(KERN_INFO "for each list entry");
+      pr_info(KERN_INFO, "info %d: %u", entry->PID, entry->CPUTime);
       if(get_cpu_use(entry->PID, &(entry->CPUTime)) != 0){
          // remove process from linked list
+         pr_info(KERN_INFO, "deleted %d", entry->PID);
          list_del(&(entry->list));
-	      kfree(del);
+	      kfree(entry);
       }
    
    }
-   spin_unlock_irqrestore(&my_lock, flags);
+   // spin_unlock_irqrestore(&my_lock, flags);
    
 
 }
@@ -138,7 +141,7 @@ static void work_handler(struct work_struct *work){
 void my_timer_callback(struct timer_list *timer) {
    // pr_info("This line is printed every %d ms.\n", time_interval);
 
-   INIT_WORK(&my_work, work_handler);
+   
 	queue_work(system_wq, &my_work);
 
    /* this will make a periodic timer */
@@ -268,6 +271,9 @@ int __init kmlab_init(void)
    // initialize timer
    timer_setup(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(time_interval));
+
+   // initalize work queue
+   INIT_WORK(&my_work, work_handler);
    
    pr_info("KMLAB MODULE LOADED\n");
    return 0;   
