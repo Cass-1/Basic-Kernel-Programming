@@ -9,3 +9,4 @@
 userapp
 *.d
 *.out
+*.sh
