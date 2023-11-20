@@ -290,7 +290,8 @@ void __exit kmlab_exit(void)
    pr_info("KMLAB MODULE UNLOADING\n");
    #endif
    // Insert your code here ...
-   // remove the proc directory
+   // remove the proc file and directory
+   proc_remove(proc_file);
    proc_remove(proc_dir);
 
    // remove timer
