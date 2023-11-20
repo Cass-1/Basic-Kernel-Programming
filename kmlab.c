@@ -191,7 +191,7 @@ static ssize_t procfs_read(struct file *file_pointer, char __user *buffer, size_
 {
    unsigned long flags;
    struct ll_struct *entry = NULL, *n;
-   char* node_string = "";
+   char* node_string = NULL;
 
    //Clear internal buffer
    spin_lock_irqsave(&my_lock, flags);
